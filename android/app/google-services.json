@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1004888115749",
+    "project_id": "medicalapp-377817",
+    "storage_bucket": "medicalapp-377817.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1004888115749:android:a0f262ccafcba47747cdcc",
+        "android_client_info": {
+          "package_name": "com.example.selekni"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1004888115749-ouicrpf0sk3k27ufqjbka7fhan5p227t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD0R-mgdbew5wN3FDudRvxMxFLDARgeTUw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1004888115749-ouicrpf0sk3k27ufqjbka7fhan5p227t.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
