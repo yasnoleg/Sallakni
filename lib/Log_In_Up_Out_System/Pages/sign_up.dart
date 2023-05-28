@@ -28,7 +28,7 @@ class _SignUpPageState extends State<SignUpPage> {
   SignUpWithGmail signUpwidthGmail = SignUpWithGmail();
 
   //VARS
-  String type = 'repair';
+  String type = 'user';
   String email = '';
   double _latitude = 0;
   double _longitude = 0;
@@ -361,7 +361,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   ),
                 ),
 
-                email.contains('service') ? Padding(
+                Padding(
                   padding: EdgeInsets.only(bottom: MyHeight*0.015),
                   child: Container(
                     alignment: Alignment.center,
@@ -378,7 +378,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       isExpanded: true,
                       underline: Container(),
                       value: type,
-                      items: <String>['repair', 'taxi']
+                      items: <String>['user','repair', 'taxi']
                           .map<DropdownMenuItem<String>>((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
@@ -395,7 +395,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       },
                     ),
                   ),
-                ) : Container() ,
+                ),
 
                 //YOU HAVE AN ACCOUNT !
                 Padding(
@@ -427,13 +427,6 @@ class _SignUpPageState extends State<SignUpPage> {
                         child: ElevatedButton(
                           onPressed: () async {
                             if(_key.currentState!.validate()){
-                              if(_emailcontroller.text.trim().contains('@service')){
-                                print('service');
-                              }else{
-                                setState(() {
-                                  type = 'user';
-                                });
-                              }
                               print(type);
                               //1
                               Future.delayed(Duration(seconds: 2), () {

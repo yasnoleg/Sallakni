@@ -224,30 +224,6 @@ class _SignInPageState extends State<SignInPage> {
                           elevation: MaterialStateProperty.all(2)
                         ),
                     ),
-                    
-                    //WITH FACEBOOK
-                    ElevatedButton(
-                        onPressed: () { }, 
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.facebook_outlined,color: Colors.blue,),
-                            SizedBox(width: MyWidth*0.04,),
-                            Text('Facebook',style: ButtonTextStyle),
-                          ],
-                        ),
-                        // ignore: prefer_const_constructors
-                        style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.all(couleur.White),
-                          shape: MaterialStateProperty.all(RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(MyHeight*0.02),
-                              side: BorderSide(width: 0.2)
-                            ),
-                          ),
-                          fixedSize: MaterialStateProperty.all(Size(MyWidth*0.4, MyHeight*0.08)),
-                          elevation: MaterialStateProperty.all(2),
-                        ),
-                      ),
                   ],
                 )
               ),

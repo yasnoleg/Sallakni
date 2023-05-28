@@ -17,6 +17,7 @@ import 'package:medical_app/Classes/tools.dart';
 import 'package:medical_app/Pages/searchpage.dart';
 import 'package:medical_app/Pages/timer/timer_widget.dart';
 import 'package:provider/provider.dart';
+import 'package:lottie/lottie.dart' as LT;
 
 class MapSample extends StatefulWidget {
   const MapSample({Key? key}) : super(key: key);
@@ -76,7 +77,8 @@ class MapSampleState extends State<MapSample> {
   //FUNCTIONS
   GetUserMap() {
     //1
-    try {
+    print(UserMap);
+    if(UserMap.isEmpty){
       Instance.collection('user').doc('${user!.email}').get().then((value) {
         setState(() {
           UserMap = value.data()!;
@@ -84,8 +86,8 @@ class MapSampleState extends State<MapSample> {
           hiveDB.UpdateUserMapData();
         });
       });
-    } catch (e) {
-      try {
+      print(UserMap);
+      if(UserMap.isEmpty){
         Instance.collection('repair').doc('${user!.email}').get().then((value) {
           setState(() {
             UserMap = value.data()!;
@@ -93,14 +95,17 @@ class MapSampleState extends State<MapSample> {
             hiveDB.UpdateUserMapData();
           });
         });
-      } catch (e) {
-        Instance.collection('taxi').doc('${user!.email}').get().then((value) {
-          setState(() {
-            UserMap = value.data()!;
-            hiveDB.usermap = UserMap;
-            hiveDB.UpdateUserMapData();
+        print(UserMap);
+        if(UserMap.isEmpty){
+          Instance.collection('repair').doc('${user!.email}').get().then((value) {
+            setState(() {
+              UserMap = value.data()!;
+              hiveDB.usermap = UserMap;
+              hiveDB.UpdateUserMapData();
+            });
           });
-        });
+          print(UserMap);
+        }
       }
     }
   }
@@ -114,14 +119,34 @@ class MapSampleState extends State<MapSample> {
     }else{
       hiveDB.LoadUserMapData();
     }
-    //1
-    if (hiveDB.usermap['locality'] == null) {
-      FindUserLocation();
-    }    
-    //1
-    if(hiveDB.usermap.isEmpty){
+    Future.delayed(Duration(seconds: 1), () {
+      showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (BuildContext context){
+          return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(10.0))),
+          contentPadding: EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
+          title: Text('Loading your location please wait!',style: StyleText,),
+          content: Container(
+            width: 250.0,
+            height: 100.0,
+            child: LT.Lottie.asset("asset/animations/loading_data.json"),
+            ),
+          );
+        }
+      );
+    });
+    Future.delayed(Duration(seconds: 2), () {
+      if (hiveDB.usermap['locality'] == null) {
+        FindUserLocation();
+      }    
       GetUserMap();
-    }
+    });
+    Future.delayed(Duration(seconds: 5), () {
+      Navigator.of(context).pop();
+    });
     super.initState();
   }
 
@@ -163,7 +188,7 @@ class MapSampleState extends State<MapSample> {
       _latitude = _locatioDT.latitude!;
       _longitude = _locatioDT.longitude!;
     });
-    FirebaseFirestore.instance.collection('user').doc('${user!.email}').update({
+    FirebaseFirestore.instance.collection(hiveDB.usermap['type']).doc('${user!.email}').update({
       'latitude': _latitude,
       'longitude': _longitude,
     });
@@ -180,7 +205,7 @@ class MapSampleState extends State<MapSample> {
     markers.add(Marker(markerId: MarkerId('user_position'),icon: markerIcon,position: LatLng(_latitude, _longitude)));
   }
 
-  void SearchNearDoctorOnUserLocation(String type, String locality) {
+  void SearchNearServiceOnUserLocation(String type, String locality) {
     markers.clear();
     services.clear();
     _custominfowindowController.hideInfoWindow!();
@@ -195,7 +220,6 @@ class MapSampleState extends State<MapSample> {
                 position: LatLng(services[key]["latitude"], services[key]["longitude"]),
                 icon: type == "repair" ? repairIcon : type == "taxi" ? taxiIcon : type == "hotel" ? hotelIcon : markerIcon,
                 onTap: () {
-                  print(' hhhhhhhhhhhhhhhhhhhhhhhhh     ${services[key]}');
                   CreateCustomInfoWindow(services[key], key);
                 },
               ),
@@ -216,7 +240,7 @@ class MapSampleState extends State<MapSample> {
           color: couleur.White,
           borderRadius: BorderRadius.circular(10),
         ),
-        child: Row(
+        child: child['type'] == 'taxi' || child['type'] == 'repair' ? Row(
           children: [
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -247,9 +271,40 @@ class MapSampleState extends State<MapSample> {
               ),
             )),
           ],
-        ),
+        ) : child['type'] == 'hotel' || child['hospital'] ? Row(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  Text('${child['name']}, ${child['country']}',style: MidTextStyle,),
+                  Text('${child['type']}, ${child['locality']}',style: SmallTextStyle,),
+                ],
+              ),
+            ),
+            Expanded(child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  display = 0;
+                  key = Key;
+                });
+                _custominfowindowController.hideInfoWindow!();
+              },
+              child: Container(
+                height: 200,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.only(topRight: Radius.circular(10),bottomRight: Radius.circular(10)),
+                  color: couleur.Black,
+                ),
+                child: Icon(Icons.arrow_forward_ios_outlined,color: couleur.White,),
+              ),
+            )),
+          ],
+        ) : Container(),
       ),
-      LatLng(child["latitude"], child["longitude"]) 
+      LatLng(child["latitude"], child["longitude"]),
     );
   }
 
@@ -291,7 +346,7 @@ class MapSampleState extends State<MapSample> {
               zoom: 18,
             ),
             zoomControlsEnabled: true,
-            zoomGesturesEnabled: false,
+            zoomGesturesEnabled: true,
             markers: markers,
             onMapCreated: (GoogleMapController controller) {
               _custominfowindowController.googleMapController = controller;
@@ -358,7 +413,7 @@ class MapSampleState extends State<MapSample> {
             ),
           ) : Container() ,
         
-          //SEARCH FOR DOCTORS
+          //SEARCH FOR SERVICE
           display == 1 ? hiveDB.usermap['type'] == 'user' ? Align(
             alignment: const Alignment(0, 0.9),
             child: Padding(
@@ -390,7 +445,7 @@ class MapSampleState extends State<MapSample> {
                             children: [
                               Expanded(child: Text(hiveDB.usermap['locality'] == null ? '  Get your location first! ' : ' ${hiveDB.usermap['locality']}' ,style: StyleText,)),
                               IconButton(onPressed: () {
-                                  SearchNearDoctorOnUserLocation("repair", hiveDB.usermap['locality']);
+                                  SearchNearServiceOnUserLocation("repair", hiveDB.usermap['locality']);
                                 }, 
                                 icon: Icon(Icons.location_on_outlined,color: couleur.Black,)),
                             ],
@@ -404,7 +459,7 @@ class MapSampleState extends State<MapSample> {
                               TextButton(
                                 onPressed: () {
                                   Navigator.push(context,
-                                    MaterialPageRoute(builder: (context) => SearchPage(username: hiveDB.usermap['username'], Search: () { SearchNearDoctorOnUserLocation(context.read<CityProvider>().cityType, context.read<CityProvider>().cityName); },)),
+                                    MaterialPageRoute(builder: (context) => SearchPage(username: hiveDB.usermap['username'], Search: () { SearchNearServiceOnUserLocation(context.read<CityProvider>().cityType, context.read<CityProvider>().cityName); },)),
                                   );
                                 }, child: Text('Search for city',style: StyleText,)),
                               Expanded(child: SizedBox()),
@@ -418,7 +473,7 @@ class MapSampleState extends State<MapSample> {
                 ],
               ),
             ),
-          ) : Container() : Align(
+          ) : Container() : services[key]['type'] == 'taxi' || services[key]['type'] == 'repair' ? Align(
             alignment: const Alignment(0, 1),
             child: Row(
                 children: [
@@ -533,6 +588,121 @@ class MapSampleState extends State<MapSample> {
                   ),
                 ],
               ),
+            ) : Align(
+            alignment: const Alignment(0, 1),
+            child: Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      padding: EdgeInsets.only(top: hight*0.01,bottom: hight*0.01,right: width*0.03,left: width*0.03),
+                      height: hight*0.22,
+                      decoration: BoxDecoration(
+                        color: couleur.White,
+                        borderRadius: BorderRadius.only(topLeft: Radius.circular(hight*0.02),topRight: Radius.circular(hight*0.02)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: couleur.Grey.withOpacity(0.4),
+                            spreadRadius: 0.5,
+                            blurRadius: 3.2,
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text('${services[key]['name']}, ${services[key]['country']}',style: StyleText,),
+                                  Text('${services[key]['locality']}',style: SmallTextStyle,),
+                                ],
+                              ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('${services[key]['type']}',style: SmallTextStyle,),
+                                Text('${services[key]['phonenumber']}',style: SmallTextStyle,),
+                              ],
+                            ),
+                            Image.asset(services[key]['type'] == 'hospital' ? 'asset/icons/hôpital_icon.png' : 'asset/icons/hôtel_icon.png'),
+                            ],
+                          ),
+                          Divider(),
+                          displayTimer == 0 ? Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: Padding(
+                                  padding: EdgeInsets.all(hight*0.01),
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      var snackBar = SnackBar(
+                                        elevation: 0,
+                                        behavior: SnackBarBehavior.floating,
+                                        backgroundColor: Colors.transparent,
+                                        dismissDirection: DismissDirection.startToEnd,
+                                        content: AwesomeSnackbarContent(
+                                          title: 'Well Done',
+                                          message: 'Now , wait for your services!',
+                                          contentType: ContentType.success,
+                                        ),
+                                      );
+                                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                                      setState(() {
+                                        displayTimer = 1;
+                                      });
+                                      CreateDemande(services[key]['firstname'],services[key]['type'],date);
+                                      SendToService(hiveDB.usermap['firstname'],services[key]['type'],date,hiveDB.usermap['locality'],hiveDB.usermap['phonenumber'],hiveDB.usermap['email']);
+                                     },
+                                    child: Container(
+                                      alignment: Alignment.center,
+                                      height: hight*0.055,
+                                      decoration: BoxDecoration(
+                                        color: couleur.Black,
+                                        borderRadius: BorderRadius.circular(hight*0.008),
+                                      ),
+                                      child: Text('Start your direction',style: TextStyle(
+                                          fontSize: 19,
+                                          fontWeight: FontWeight.bold,
+                                          letterSpacing: 2,
+                                          fontFamily: 'text',
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ) : Padding(
+                            padding: EdgeInsets.only(top: hight*0.03),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text('3000 DZD',style: StyleText),
+                                Text('Check your historical', style: TextStyle(
+                                  fontSize: 19,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 2,
+                                  fontFamily: 'text',
+                                  color: couleur.LightRed,
+                                ),),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
         ]
       ),
@@ -541,7 +711,7 @@ class MapSampleState extends State<MapSample> {
 
   getCityStreetOfUser() async {
     List<Placemark> placemark = await placemarkFromCoordinates(_latitude, _longitude);
-    FirebaseFirestore.instance.collection('user').doc('${user!.email}').update({
+    FirebaseFirestore.instance.collection(hiveDB.usermap['type']).doc('${user!.email}').update({
       'country': placemark[0].country,
       'street': placemark[0].street,
       'postalcode': placemark[0].postalCode,

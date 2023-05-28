@@ -30,7 +30,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => CityProvider()),
       ],
-      child: AuthPage(),
+      child: MaterialApp(home: AuthPage()),
     )
   );
 }

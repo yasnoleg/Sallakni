@@ -308,7 +308,7 @@ class _HistoricState extends State<Historic> {
                     ),
                   );
                 },
-              ) : Lottie.network('https://assets7.lottiefiles.com/packages/lf20_qargqtj3.json');
+              ) : Lottie.asset("asset/animations/empty_list.json");
             }),
           ),
         ],

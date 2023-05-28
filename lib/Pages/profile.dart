@@ -37,27 +37,37 @@ class _ProfilePageState extends State<ProfilePage> {
   //FUNCTIONS
   GetUserMap() {
     //1
-    Instance.collection('user').doc('${user!.email}').get().then((value) {
-      setState(() {
-        UserMap = value.data()!;
-        hiveDB.usermap = UserMap;
-        hiveDB.UpdateUserMapData();
+    print(UserMap);
+    if(UserMap.isEmpty){
+      Instance.collection('user').doc('${user!.email}').get().then((value) {
+        setState(() {
+          UserMap = value.data()!;
+          hiveDB.usermap = UserMap;
+          hiveDB.UpdateUserMapData();
+        });
       });
-    });
-    Instance.collection('repair').doc('${user!.email}').get().then((value) {
-      setState(() {
-        UserMap = value.data()!;
-        hiveDB.usermap = UserMap;
-        hiveDB.UpdateUserMapData();
-      });
-    });
-    Instance.collection('taxi').doc('${user!.email}').get().then((value) {
-      setState(() {
-        UserMap = value.data()!;
-        hiveDB.usermap = UserMap;
-        hiveDB.UpdateUserMapData();
-      });
-    });
+      print(UserMap);
+      if(UserMap.isEmpty){
+        Instance.collection('repair').doc('${user!.email}').get().then((value) {
+          setState(() {
+            UserMap = value.data()!;
+            hiveDB.usermap = UserMap;
+            hiveDB.UpdateUserMapData();
+          });
+        });
+        print(UserMap);
+        if(UserMap.isEmpty){
+          Instance.collection('repair').doc('${user!.email}').get().then((value) {
+            setState(() {
+              UserMap = value.data()!;
+              hiveDB.usermap = UserMap;
+              hiveDB.UpdateUserMapData();
+            });
+          });
+          print(UserMap);
+        }
+      }
+    }
   }
 
   //Choose profile picture 

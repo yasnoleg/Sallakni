@@ -53,7 +53,6 @@ class SignUpWithGmail {
     );
 
     // finally, lets sign in 
-    UploadUserInfoToFireStrore(gUser.email, gUser.displayName.toString(), gUser.id, 'firstname', 'lastname', '00000000', 'user');
     return await FirebaseAuth.instance.signInWithCredential(credential);
   }
   
